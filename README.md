@@ -2,7 +2,8 @@
 
 A new Flutter project.
 
-## Getting Started
+<details>
+  <summary><strong>Getting Started</strong></summary>
 
 This project is a starting point for a Flutter application.
 
@@ -17,7 +18,7 @@ samples, guidance on mobile development, and a full API reference.
 
 <details>
   <summary><strong>ASSIGNMENT 7</strong></summary>
-  
+
 ### 1. Explain what are stateless widgets and stateful widgets, and explain the difference between them.
 Stateless Widgets are static and don't hold mutable state. They will update when external data changes. 
 
