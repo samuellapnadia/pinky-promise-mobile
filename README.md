@@ -115,7 +115,8 @@ class _MyHomePageState ... {
 ```
 import 'package:pinky_promise/menu.dart';
 ```
-to the top of the main.dart file since main.dart no longer understands the MyHomePage class since it is moved to the menu.dart file
+to the top of the main.dart file since main.dart no longer understands the MyHomePage class since it is moved to the menu.dart file.
+
 7. Then, I changed MaterialApp to this:
 ```
 colorScheme: ColorScheme.fromSwatch(
