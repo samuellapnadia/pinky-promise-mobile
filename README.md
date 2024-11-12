@@ -521,3 +521,419 @@ Drawer(
 );
 
 ```
+
+### HOW I IMPLEMENTED THE CHECKLISTS
+#### A. Creating at least one new page in the application, specifically a form page to add a new item.
+1. To do this, I created two new directory in lib, namely screens and widgets. But I used lib/screens in this step.
+2. I moved menu.dart to this directory and added a new file named productentry_form.dart with the code inside of the file as follows:
+```
+import 'package:flutter/material.dart';
+import 'package:pinky_promise/widgets/left_drawer.dart';
+
+class ProductEntryFormPage extends StatefulWidget {
+  const ProductEntryFormPage({super.key});
+
+  @override
+  State<ProductEntryFormPage> createState() => _ProductEntryFormPageState();
+}
+
+class _ProductEntryFormPageState extends State<ProductEntryFormPage> {
+  final _formKey = GlobalKey<FormState>();
+  String _product = "";
+  String _description = "";
+  int _amount = 0;
+  int _coquetteness = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Center(
+          child: Text(
+            'Add Your Product!',
+          ),
+        ),
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        foregroundColor: Colors.white,
+      ),
+      drawer: const LeftDrawer(),
+      body: Form(
+        key: _formKey,
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TextFormField(
+                  decoration: InputDecoration(
+                    hintText: "Product",
+                    labelText: "Product",
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(5.0),
+                    ),
+                  ),
+                  onChanged: (String? value) {
+                    setState(() {
+                      _product = value!;
+                    });
+                  },
+                  validator: (String? value) {
+                    if (value == null || value.isEmpty) {
+                      return "Product cannot be empty!";
+                    }
+                    return null;
+                  },
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TextFormField(
+                  decoration: InputDecoration(
+                    hintText: "Description",
+                    labelText: "Description",
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(5.0),
+                    ),
+                  ),
+                  onChanged: (String? value) {
+                    setState(() {
+                      _description = value!;
+                    });
+                  },
+                  validator: (String? value) {
+                    if (value == null || value.isEmpty) {
+                      return "Description cannot be empty!";
+                    }
+                    return null;
+                  },
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TextFormField(
+                  decoration: InputDecoration(
+                    hintText: "Amount",
+                    labelText: "Amount",
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(5.0),
+                    ),
+                  ),
+                  keyboardType: TextInputType.number,
+                  onChanged: (String? value) {
+                    setState(() {
+                      _amount = int.tryParse(value!) ?? 0;
+                    });
+                  },
+                  validator: (String? value) {
+                    if (value == null || value.isEmpty) {
+                      return "Amount cannot be empty!";
+                    }
+                    if (int.tryParse(value) == null) {
+                      return "Amount must be a number!";
+                    }
+                    return null;
+                  },
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TextFormField(
+                  decoration: InputDecoration(
+                    hintText: "Coquetteness",
+                    labelText: "Coquetteness",
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(5.0),
+                    ),
+                  ),
+                  keyboardType: TextInputType.number,
+                  onChanged: (String? value) {
+                    setState(() {
+                      _coquetteness = int.tryParse(value!) ?? 0; // Corrected here
+                    });
+                  },
+                  validator: (String? value) {
+                    if (value == null || value.isEmpty) {
+                      return "Coquetteness cannot be empty!";
+                    }
+                    if (int.tryParse(value) == null) {
+                      return "Coquetteness must be a number!";
+                    }
+                    return null;
+                  },
+                ),
+              ),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: ElevatedButton(
+                    style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all(
+                        Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                    onPressed: () {
+                      if (_formKey.currentState!.validate()) {
+                        showDialog(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                              title: const Text('Product successfully saved, buddy!!'),
+                              content: SingleChildScrollView(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('Product: $_product'),
+                                    Text('Description: $_description'),
+                                    Text('Amount: $_amount'),
+                                    Text('Coquetteness: $_coquetteness'),
+                                  ],
+                                ),
+                              ),
+                              actions: [
+                                TextButton(
+                                  child: const Text('OK'),
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                    _formKey.currentState!.reset();
+                                    setState(() {
+                                      _product = "";
+                                      _description = "";
+                                      _amount = 0;
+                                      _coquetteness = 0;
+                                    });
+                                  },
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      }
+                    },
+                    child: const Text(
+                      "Save",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+```
+I have included four input elements, namely Product, Description, Price, and Coquetteness, with the input field not allowed to be empty, and each input field have contain data in the model's data type. A save button is also included. 
+
+#### B. Redirect the user to the new item addition form when they press the Add Item button on the main page.
+1. To do this, I created product_card.dart in widgets directory with the content as follows:
+```
+import 'package:pinky_promise/screens/productentry_form.dart';
+import 'package:flutter/material.dart';
+
+class ItemHomepage {
+  final String name;
+  final IconData icon;
+  final Color color;
+
+  ItemHomepage(this.name, this.icon, this.color);
+}
+
+class ItemCard extends StatelessWidget {
+  final ItemHomepage item;
+
+  const ItemCard(this.item, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: item.color,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        onTap: () {
+          if (item.name == "Add Item") {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const ProductEntryFormPage()),
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("You have pressed the ${item.name} button!")),
+            );
+          }
+        },
+        child: Container(
+          padding: const EdgeInsets.all(8),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  item.icon,
+                  color: Colors.white,
+                  size: 30.0,
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  item.name,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.white),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+```
+Here, I updated the onTap Handler to navigate to ProductEntryFormPage. ItemHomePage and ItemCard were taken previously from menu.dart
+ 
+#### C. Display the data from the form in a pop-up after pressing the Save button on the new item addition form page.
+To do this, I modified the productentry_form.dart file. I create a button as the next child of Column and wrap the button with Padding and Align. 
+```
+Align(
+  alignment: Alignment.bottomCenter,
+  child: Padding(
+    padding: const EdgeInsets.all(8.0),
+    child: ElevatedButton(
+      style: ButtonStyle(
+        backgroundColor: MaterialStateProperty.all(
+          Theme.of(context).colorScheme.primary,
+        ),
+      ),
+      onPressed: () {
+        if (_formKey.currentState!.validate()) {
+          showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                title: const Text('Product successfully saved, buddy!!'),
+                content: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Product: $_product'),
+                      Text('Description: $_description'),
+                      Text('Price: $_price'),
+                      Text('Coquetteness: $_coquetteness'),
+                    ],
+                  ),
+                ),
+                actions: [
+                  TextButton(
+                    child: const Text('OK'),
+                    onPressed: () {
+                      Navigator.pop(context); // Closes the dialog
+                      _formKey.currentState!.reset(); // Resets the form
+                      setState(() {
+                        _product = "";
+                        _description = "";
+                        _price = 0;
+                        _coquetteness = 0;
+                      });
+                    },
+                  ),
+                ],
+              );
+            },
+          );
+        }
+      },
+      child: const Text(
+        "Save",
+        style: TextStyle(color: Colors.white),
+      ),
+    ),
+  ),
+);
+```
+#### D. Create a drawer in the application
+I implemented this step by making a left_drawer.dart file in the lib/widgets directory with the content as follows:
+```
+import 'package:flutter/material.dart';
+import 'package:pinky_promise/screens/menu.dart';
+import 'package:pinky_promise/screens/productentry_form.dart';
+
+class LeftDrawer extends StatelessWidget {
+  const LeftDrawer({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Drawer(
+      child: ListView(
+        children: [
+          DrawerHeader(
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            child: const Column(
+              children: [
+                Text(
+                  'PINKY PROMISE',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                Padding(padding: EdgeInsets.all(8)),
+                Text(
+                  "Your favorite coquette trinket shop!",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.normal,
+                    fontSize: 15.0,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.home_outlined),
+            title: const Text('Home Page'),
+            onTap: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => MyHomePage(),
+                ),
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.add),
+            title: const Text('Add Item'),
+            onTap: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ProductEntryFormPage(),
+                ),
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.logout),
+            title: const Text('Logout'),
+            onTap: () {
+              // logout logic here 
+              Navigator.pop(context);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+```
+In the left_drawer.dart file, contained Home, Logout and Add Item. But only Home & Add Item have been implememented here. Home option can redirect the user to the main page and the Add Item redirects the user to the new item addition form page.

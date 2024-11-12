@@ -12,7 +12,7 @@ class _ProductEntryFormPageState extends State<ProductEntryFormPage> {
   final _formKey = GlobalKey<FormState>();
   String _product = "";
   String _description = "";
-  int _price = 0;
+  int _amount = 0;
   int _coquetteness = 0;
 
   @override
@@ -84,8 +84,8 @@ class _ProductEntryFormPageState extends State<ProductEntryFormPage> {
                 padding: const EdgeInsets.all(8.0),
                 child: TextFormField(
                   decoration: InputDecoration(
-                    hintText: "Price",
-                    labelText: "Price",
+                    hintText: "Amount",
+                    labelText: "Amount",
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(5.0),
                     ),
@@ -93,15 +93,15 @@ class _ProductEntryFormPageState extends State<ProductEntryFormPage> {
                   keyboardType: TextInputType.number,
                   onChanged: (String? value) {
                     setState(() {
-                      _price = int.tryParse(value!) ?? 0;
+                      _amount = int.tryParse(value!) ?? 0;
                     });
                   },
                   validator: (String? value) {
                     if (value == null || value.isEmpty) {
-                      return "Price cannot be empty!";
+                      return "Amount cannot be empty!";
                     }
                     if (int.tryParse(value) == null) {
-                      return "Price must be a number!";
+                      return "Amount must be a number!";
                     }
                     return null;
                   },
@@ -157,7 +157,7 @@ class _ProductEntryFormPageState extends State<ProductEntryFormPage> {
                                   children: [
                                     Text('Product: $_product'),
                                     Text('Description: $_description'),
-                                    Text('Price: $_price'),
+                                    Text('Amount: $_amount'),
                                     Text('Coquetteness: $_coquetteness'),
                                   ],
                                 ),
@@ -171,7 +171,7 @@ class _ProductEntryFormPageState extends State<ProductEntryFormPage> {
                                     setState(() {
                                       _product = "";
                                       _description = "";
-                                      _price = 0;
+                                      _amount = 0;
                                       _coquetteness = 0;
                                     });
                                   },

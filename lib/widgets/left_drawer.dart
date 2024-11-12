@@ -66,7 +66,7 @@ class LeftDrawer extends StatelessWidget {
             leading: const Icon(Icons.logout),
             title: const Text('Logout'),
             onTap: () {
-              // Add logout logic here if needed
+              // logout logic here 
               Navigator.pop(context);
             },
           ),
