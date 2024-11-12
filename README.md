@@ -340,3 +340,184 @@ To do this, I created an ItemCard class to display the buttons (has been done in
         },
 ...
 ```
+</details>
+<details>
+  <summary><strong>ASSIGNMENT 8</strong></summary>
+
+### 1.What is the purpose of const in Flutter? Explain the advantages of using const in Flutter code. When should we use const, and when should it not be used?
+The const keyword is used when the value of the variable is known at compile-time and never changes. The purpose of it is to inform Dart that certain values are known at compile-time, which makes apps more memory-efficient and faster. Using const widgets allows Flutter to reuse the same instance wherever that widget is used in the widget tree, reducing memory usage. 
+
+We should use const when a widget's properties do not change. 
+We should not use const when a widget's properties need to change, such as a widget with an animation or one that responds to user interactions. We also shouldn't use const when values are not known at compile-time.
+
+### 2. Explain and compare the usage of Column and Row in Flutter. Provide example implementations of each layout widget!
+
+Column and Row are used by adding a list of children widgets to the Row/Column widget.
+The differences between the two are:
+
+Column: aligns child widgets in a vertical direction
+Row: align child widgets along a horizontal line.
+
+Example implementation:
+Column:
+```
+Center(
+  child: Column(
+    children: [
+      const Padding(
+        padding: EdgeInsets.only(top: 16.0),
+        child: Text(
+          'Hi MofuBuddy! Welcome back to Pinky Promise!',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 18.0,
+          ),
+        ),
+      ),
+      GridView.count(
+        primary: true,
+        padding: const EdgeInsets.all(20),
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 10,
+        crossAxisCount: 3,
+        shrinkWrap: true,
+        children: items.map((ItemHomepage item) {
+          return ItemCard(item);
+        }).toList(),
+      ),
+    ],
+  ),
+)
+
+```
+
+Row:
+```
+Row(
+  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+  children: [
+    InfoCard(title: 'NPM', content: npm),
+    InfoCard(title: 'Name', content: name),
+    InfoCard(title: 'Class', content: className),
+    ],
+  ),
+
+```
+### 3. List the input elements you used on the form page in this assignment. Are there other Flutter input elements you didn't use in this assignment? Explain!
+
+Input elements I used on the form page:
+- TextFormField: used to capture text input for Product and Description
+- ElevatedButton: this button is used to submit the form and save the product data. 
+
+Other Flutter input elements you didn't use in this assignment
+- Checkbox: useful for capturing binary choices.
+- Radio: useful for selecting one option from a list of mutually exclusive choices.
+- Switch: ideal for toggling a setting on or off. Often used in preference forms
+- Slider: used for selecting a value from a continuous range.
+- DatePicker:  used to let users select dates.
+- DropdownButton: allows users to select from a list of options.
+- AutoComplete: provides a text field with auto-completion capabilities.
+
+### 4. How do you set the theme within a Flutter application to ensure consistency? Did you implement a theme in your application?
+To ensure consistency, I used MaterialApp in the the main.dart file:
+```
+import 'package:flutter/material.dart';
+import 'package:pinky_promise/screens/menu.dart';
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Flutter Demo',
+      theme: ThemeData(
+        // Define a consistent color scheme for the app
+        colorScheme: ColorScheme.fromSwatch(
+          primarySwatch: Colors.pink,
+        ).copyWith(
+          secondary: Colors.pink[500], 
+        ),
+      ),
+      home: MyHomePage(),
+    );
+  }
+}
+
+```
+Regarding theme implementation, I implemented a "Pink" theme for this application, similar to what I did in the previous assignments with flutter. 
+- Primary Swatch: i used
+```
+primarySwatch: Colors.pink
+```
+which sets the primary color of your app to shades of pink. This color is automatically applied to elements like the AppBar background, buttons, and any widget that uses Theme.of(context).colorScheme.primary.
+- Secondary Color: The secondary color here is 
+```
+secondary: Colors.pink[500]
+```
+- AppBar Styling: by setting colorScheme.primary to pink, the AppBar inherits the pink color as its background color, which ensures consistency.
+
+### 5.  How do you manage navigation in a multi-page Flutter application?
+To manage navugation in a multi-page Flutter application, first I used Navigator.pushReplacement to navigate between screens when specific buttons are pressed. 
+Example:
+```
+ListTile(
+  leading: const Icon(Icons.home_outlined),
+  title: const Text('Home Page'),
+  onTap: () {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => MyHomePage()),
+    );
+  },
+),
+
+```
+
+I also used Drawer widget to create a side navigation menu for the app.
+
+```
+drawer: const LeftDrawer(),
+
+```
+
+```
+Drawer(
+  child: ListView(
+    children: [
+      DrawerHeader(
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.primary,
+        ),
+        child: const Column(
+          children: [
+            Text(
+              'Pinky Promise',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      ),
+      ListTile(
+        leading: const Icon(Icons.add),
+        title: const Text('Add Product'),
+        onTap: () {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => ProductEntryFormPage()),
+          );
+        },
+      ),
+    ],
+  ),
+);
+
+```

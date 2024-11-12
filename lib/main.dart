@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pinky_promise/menu.dart';
+import 'package:pinky_promise/screens/menu.dart';
 
 
 void main() {
