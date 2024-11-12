@@ -936,4 +936,4 @@ class LeftDrawer extends StatelessWidget {
 }
 
 ```
-In the left_drawer.dart file, contained Home, Logout and Add Item. But only Home & Add Item have been implememented here. Home option can redirect the user to the main page and the Add Item redirects the user to the new item addition form page.
+In the left_drawer.dart file, it contains Home, Logout and Add Item. But only Home & Add Item have been implemented here. Home option can redirect the user to the main page and the Add Item redirects the user to the new item addition form page.
