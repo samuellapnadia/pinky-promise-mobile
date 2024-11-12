@@ -355,8 +355,8 @@ We should not use const when a widget's properties need to change, such as a wid
 Column and Row are used by adding a list of children widgets to the Row/Column widget.
 The differences between the two are:
 
-Column: aligns child widgets in a vertical direction
-Row: align child widgets along a horizontal line.
+- Column: aligns child widgets in a vertical direction
+- Row: align child widgets along a horizontal line.
 
 Example implementation:
 Column:
