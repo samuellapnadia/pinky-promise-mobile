@@ -1005,10 +1005,8 @@ SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SAMESITE = 'None'
 SESSION_COOKIE_SAMESITE = 'None'
 ```
-I also added 'corsheaders.middleware.CorsMiddleware' to MIDDLEWARE and fixed ALLOWED_HOSTS to
-```
-ALLOWED_HOSTS = [..., ..., "10.0.2.2"]
-```
+I also added 'corsheaders.middleware.CorsMiddleware' to MIDDLEWARE and added "10.0.2.2" to ALLOWED_HOSTS 
+
 2. I created a view method for login which is done in authentication/views.py.
 ```
 from django.contrib.auth import authenticate, login as auth_login
