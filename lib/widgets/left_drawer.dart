@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pinky_promise/screens/menu.dart';
 import 'package:pinky_promise/screens/productentry_form.dart';
+import 'package:pinky_promise/screens/list_product.dart';
 
 class LeftDrawer extends StatelessWidget {
   const LeftDrawer({super.key});
@@ -57,7 +58,19 @@ class LeftDrawer extends StatelessWidget {
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => ProductEntryFormPage(),
+                  builder: (context) => const ProductEntryFormPage(),
+                ),
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.list),
+            title: const Text('Product List'),
+            onTap: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ProductListPage(),
                 ),
               );
             },
@@ -66,8 +79,7 @@ class LeftDrawer extends StatelessWidget {
             leading: const Icon(Icons.logout),
             title: const Text('Logout'),
             onTap: () {
-              // logout logic here 
-              Navigator.pop(context);
+              Navigator.pop(context); 
             },
           ),
         ],

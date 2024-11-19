@@ -1,5 +1,9 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:pinky_promise/widgets/left_drawer.dart';
+import 'package:pbp_django_auth/pbp_django_auth.dart';
+import 'package:provider/provider.dart';
+import 'package:pinky_promise/screens/menu.dart';
 
 class ProductEntryFormPage extends StatefulWidget {
   const ProductEntryFormPage({super.key});
@@ -12,16 +16,19 @@ class _ProductEntryFormPageState extends State<ProductEntryFormPage> {
   final _formKey = GlobalKey<FormState>();
   String _product = "";
   String _description = "";
-  int _amount = 0;
-  int _coquetteness = 0;
+  String _coquetteness = ""; 
+  int _price = 0;
 
   @override
   Widget build(BuildContext context) {
+    final request = context.watch<CookieRequest>();
+
     return Scaffold(
       appBar: AppBar(
         title: const Center(
           child: Text(
             'Add Your Product!',
+            style: TextStyle(fontWeight: FontWeight.bold),
           ),
         ),
         backgroundColor: Theme.of(context).colorScheme.primary,
@@ -31,155 +38,160 @@ class _ProductEntryFormPageState extends State<ProductEntryFormPage> {
       body: Form(
         key: _formKey,
         child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: TextFormField(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextFormField(
                   decoration: InputDecoration(
-                    hintText: "Product",
+                    hintText: "Product Name",
                     labelText: "Product",
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(5.0),
                     ),
                   ),
-                  onChanged: (String? value) {
+                  onChanged: (value) {
                     setState(() {
-                      _product = value!;
+                      _product = value;
                     });
                   },
-                  validator: (String? value) {
+                  validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return "Product cannot be empty!";
+                      return "Product name cannot be empty!";
                     }
                     return null;
                   },
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: TextFormField(
+                const SizedBox(height: 16),
+
+
+                TextFormField(
                   decoration: InputDecoration(
-                    hintText: "Description",
+                    hintText: "Enter Description",
                     labelText: "Description",
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(5.0),
                     ),
                   ),
-                  onChanged: (String? value) {
+                  onChanged: (value) {
                     setState(() {
-                      _description = value!;
+                      _description = value;
                     });
                   },
-                  validator: (String? value) {
+                  validator: (value) {
                     if (value == null || value.isEmpty) {
                       return "Description cannot be empty!";
                     }
                     return null;
                   },
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: TextFormField(
+                const SizedBox(height: 16),
+
+
+                TextFormField(
                   decoration: InputDecoration(
-                    hintText: "Amount",
-                    labelText: "Amount",
+                    hintText: "Enter Price",
+                    labelText: "Price",
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(5.0),
                     ),
                   ),
                   keyboardType: TextInputType.number,
-                  onChanged: (String? value) {
+                  onChanged: (value) {
                     setState(() {
-                      _amount = int.tryParse(value!) ?? 0;
+                      _price = int.tryParse(value) ?? 0;
                     });
                   },
-                  validator: (String? value) {
+                  validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return "Amount cannot be empty!";
+                      return "Price cannot be empty!";
                     }
                     if (int.tryParse(value) == null) {
-                      return "Amount must be a number!";
+                      return "Price must be a number!";
                     }
                     return null;
                   },
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: TextFormField(
+                const SizedBox(height: 16),
+
+
+                TextFormField(
                   decoration: InputDecoration(
-                    hintText: "Coquetteness",
+                    hintText: "Enter Coquetteness Level",
                     labelText: "Coquetteness",
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(5.0),
                     ),
                   ),
-                  keyboardType: TextInputType.number,
-                  onChanged: (String? value) {
+                  onChanged: (value) {
                     setState(() {
-                      _coquetteness = int.tryParse(value!) ?? 0; // Corrected here
+                      _coquetteness = value;
                     });
                   },
-                  validator: (String? value) {
+                  validator: (value) {
                     if (value == null || value.isEmpty) {
                       return "Coquetteness cannot be empty!";
-                    }
-                    if (int.tryParse(value) == null) {
-                      return "Coquetteness must be a number!";
                     }
                     return null;
                   },
                 ),
-              ),
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
+                const SizedBox(height: 16),
+
+
+                Align(
+                  alignment: Alignment.center,
                   child: ElevatedButton(
-                    style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all(
-                        Theme.of(context).colorScheme.primary,
-                      ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
                     ),
-                    onPressed: () {
+                    onPressed: () async {
                       if (_formKey.currentState!.validate()) {
-                        showDialog(
-                          context: context,
-                          builder: (context) {
-                            return AlertDialog(
-                              title: const Text('Product successfully saved, buddy!!'),
-                              content: SingleChildScrollView(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text('Product: $_product'),
-                                    Text('Description: $_description'),
-                                    Text('Amount: $_amount'),
-                                    Text('Coquetteness: $_coquetteness'),
-                                  ],
+                        try {
+                          // Send data to the backend
+                          final response = await request.postJson(
+                            "http://127.0.0.1:8000/create-flutter/",
+                            jsonEncode(<String, String>{
+                              'name': _product,
+                              'description': _description,
+                              'price': _price.toString(),
+                              'coquetteness': _coquetteness,
+                            }),
+                          );
+
+                          if (context.mounted) {
+                            if (response['status'] == 'success') {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text("Product added successfully!"),
+                                  backgroundColor: Colors.green,
                                 ),
-                              ),
-                              actions: [
-                                TextButton(
-                                  child: const Text('OK'),
-                                  onPressed: () {
-                                    Navigator.pop(context);
-                                    _formKey.currentState!.reset();
-                                    setState(() {
-                                      _product = "";
-                                      _description = "";
-                                      _amount = 0;
-                                      _coquetteness = 0;
-                                    });
-                                  },
+                              );
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => MyHomePage(),
                                 ),
-                              ],
-                            );
-                          },
-                        );
+                              );
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    "Failed to add product: ${response['message']}",
+                                  ),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          }
+                        } catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text("Error: $e"),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
                       }
                     },
                     child: const Text(
@@ -188,8 +200,8 @@ class _ProductEntryFormPageState extends State<ProductEntryFormPage> {
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

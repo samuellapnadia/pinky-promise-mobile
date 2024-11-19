@@ -937,3 +937,665 @@ class LeftDrawer extends StatelessWidget {
 
 ```
 In the left_drawer.dart file, it contains Home, Logout and Add Item. But only Home & Add Item have been implemented here. Home option can redirect the user to the main page and the Add Item redirects the user to the new item addition form page.
+
+
+</details>
+<details>
+  <summary><strong>ASSIGNMENT 9</strong></summary>
+
+### 1. Explain why we need to create a model to retrieve or send JSON data. Will an error occur if we don't create a model first?
+We need a model for a JSON data because a model defines the structure of the data, ensuring that the JSON data retrievef or sent matches the expected format.
+Models also simplify converting JSON data to usable objects in the code (deserialization) and converting objects back to JSON for sending data (serialization).
+
+If we don't create a model first, we will have increased complexity and it is potential for runtime errors to happen. Debugging issues related to JSON data also becomes more difficult because there is no standardized way to ensure the data structure is correct.
+
+### 2. Explain the function of the http library that you implemented for this task.
+The HTTP library implemented here can be used to make HTTP requests such as POST & GET. POST is used to send new product data to the backend and GET is used to fetch the list of products from the Django backend.
+
+HTTP library also helps with handling API communication as well as data deserialization and serialization (handling data exchange between flutter and django for example).
+
+### 3. Explain the function of CookieRequest and why it's necessary to share the CookieRequest instance with all components in the Flutter app.
+- Session Management: When a user logs in, the server sends a session cookie, which is stored by CookieRequest. This cookie is then automatically included in subsequent requests to authenticate the user.
+- Authentication: CookieRequest helps handle login, logout, and managing user  session states.
+- Simplified API Calls: CookieRequest provide methods like POST and GET, for making HTTP requests with cookies & CSRF tokens included.
+
+It's necessary to share the CookieRequest instance with all components in the Flutter app because by doing this, all parts of the app can access and use the same session cookies. We can also ensure a centralized cookie management since cookies are stored in a single instance of CookieRequest.
+
+### 4. Explain the mechanism of data transmission, from input to display in Flutter.
+1. The process begins with the user providing input through UI components, for example TextField.
+2. Then, before processing the input, form validation occurs. This happens by using the validator parameter in TextFormField or custom logic before submission.
+3. After that, data is being sent to backend, but this occurs if the data needs to be persisted or processed by a server, it is sent to the backend using an HTTP request.
+4. Then data from backend is retrieved. The mechanism happens by having the response sent by the backend being decoded by jsonDecode and a model class used to parse JSON data into Dart objects
+5. Once input data is processed, the app's state is updated to reflect the changes.
+6. The updated state triggers the widget to rebuild, and the data is displayed to the user. The UI automatically updates to reflect the new state.
+7. Then a continous feedback loop occurs. 
+
+### 5. Explain the authentication mechanism from login, register, to logout. Start from inputting account data in Flutter to Django's completion of the authentication process and display of the menu in Flutter.
+#### LOGIN
+1. First a user tries to login with an account (username and password)
+2. Flutter sends the credentials to a django endpoint, in this case /auth/login/. This is being done by sending a HTTP POST request
+3. Django authenticates the user by verifying the username and password using authenticate() from django.contrib.auth and creating a session and setting a cookie if the authentication is successful.
+4. If the login is successful, Django returns a success message along with a session cookie.
+
+#### REGISTER
+1. First a user tries to register an account (username and password)
+2. Flutter sends data to a django endpoint, in this case /auth/register/. This is being done by sending a HTTP POST request, data being sent is in JSON format
+3. Django validates the data and checks for the username as well as the password.
+4. If valid, Django creates a new user object and saves it in the database
+5. If successful, Flutter displays a success message and redirects the user to the login page.
+
+#### LOGOUT 
+1. When a user clicks the logout button, Flutter sends a GET or POST request to Django's logout endpoint, in this case /auth/logout/).
+2. Then, Django clears session data and invalidates the session cookie
+3. If the logout is successful, the app redirects the user to the login page again. 
+
+#### ACCESSING AUTHENTICATED PAGES
+1. Flutter sends an authenticated HTTP request to retrieve protected resources, such as a user-specific product list in the assignment.
+2. Then, Django checks if the session cookie matches an authenticated user session. If valid, Django retrieves and returns the requested data.
+3. Flutter parses the received JSON data and updates the UI to display user-specific content.
+
+### 6. HOW I IMPLEMENTED THE CHECKLISTS
+#### Implement the registration feature in the Flutter project.
+1. I started by creating a django app called authentication in my previous pinky-promise assignment as well as adjusting the settings to include the authentication and corsheaders in the INSTALLED_APPS and adjusting the settings to add the following variables
+```
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SAMESITE = 'None'
+SESSION_COOKIE_SAMESITE = 'None'
+```
+I also added 'corsheaders.middleware.CorsMiddleware' to MIDDLEWARE and fixed ALLOWED_HOSTS to
+```
+ALLOWED_HOSTS = [..., ..., "10.0.2.2"]
+```
+2. I created a view method for login which is done in authentication/views.py.
+```
+from django.contrib.auth import authenticate, login as auth_login
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+def login(request):
+    username = request.POST['username']
+    password = request.POST['password']
+    user = authenticate(username=username, password=password)
+    if user is not None:
+        if user.is_active:
+            auth_login(request, user)
+            # Successful login status.
+            return JsonResponse({
+                "username": user.username,
+                "status": True,
+                "message": "Login successful!"
+                # Add other data if you want to send data to Flutter.
+            }, status=200)
+        else:
+            return JsonResponse({
+                "status": False,
+                "message": "Login failed, account disabled."
+            }, status=401)
+
+    else:
+        return JsonResponse({
+            "status": False,
+            "message": "Login failed, check email or password again."
+        }, status=401)
+```
+
+3. Made urls.py in the authentication app and filled it as follows
+```
+from django.urls import path
+from authentication.views import login
+
+app_name = 'authentication'
+
+urlpatterns = [
+    path('login/', login, name='login'),
+]
+```
+3. Fixed pinky_promise/urls.py by adding
+```
+path('auth/', include('authentication.urls'))
+```
+#### Integrate the Django authentication system with the Flutter project.
+1. Installed the packages provided
+```
+flutter pub add provider
+flutter pub add pbp_django_auth
+```
+2. Then, I modified root widget to provide the CookieRequest library to all child widgets using Provider
+```
+class LoginApp extends StatelessWidget {
+  const LoginApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Login',
+      theme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSwatch(
+          primarySwatch: Colors.pink,
+        ).copyWith(secondary: Colors.pink[500]),
+      ),
+      home: const LoginPage(),
+    );
+  }
+}
+```
+3. Implemented a register function in your project by adding another function in authentication/views.py
+```
+from django.contrib.auth.models import User
+import json
+
+...
+
+@csrf_exempt
+def register(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        username = data['username']
+        password1 = data['password1']
+        password2 = data['password2']
+
+        # Check if the passwords match
+        if password1 != password2:
+            return JsonResponse({
+                "status": False,
+                "message": "Passwords do not match."
+            }, status=400)
+
+        # Check if the username is already taken
+        if User.objects.filter(username=username).exists():
+            return JsonResponse({
+                "status": False,
+                "message": "Username already exists."
+            }, status=400)
+
+        # Create the new user
+        user = User.objects.create_user(username=username, password=password1)
+        user.save()
+
+        return JsonResponse({
+            "username": user.username,
+            "status": 'success',
+            "message": "User created successfully!"
+        }, status=200)
+
+    else:
+        return JsonResponse({
+            "status": False,
+            "message": "Invalid request method."
+        }, status=400)
+
+```
+
+#### Create a login page in the Flutter project.
+1. Created a login.dart in lib/screens named menu.dart and filled it with
+```
+import 'package:pinky_promise/screens/menu.dart';
+import 'package:flutter/material.dart';
+import 'package:pbp_django_auth/pbp_django_auth.dart';
+import 'package:provider/provider.dart';
+import 'package:pinky_promise/screens/register.dart';
+
+void main() {
+  runApp(const LoginApp());
+}
+
+class LoginApp extends StatelessWidget {
+  const LoginApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Login',
+      theme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSwatch(
+          primarySwatch: Colors.pink,
+        ).copyWith(secondary: Colors.pink[500]),
+      ),
+      home: const LoginPage(),
+    );
+  }
+}
+
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
+
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    final request = context.watch<CookieRequest>();
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Login'),
+      ),
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Card(
+            elevation: 8,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12.0),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Login',
+                    style: TextStyle(
+                      fontSize: 24.0,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 30.0),
+                  TextField(
+                    controller: _usernameController,
+                    decoration: const InputDecoration(
+                      labelText: 'Username',
+                      hintText: 'Enter your username',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(12.0)),
+                      ),
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+                    ),
+                  ),
+                  const SizedBox(height: 12.0),
+                  TextField(
+                    controller: _passwordController,
+                    decoration: const InputDecoration(
+                      labelText: 'Password',
+                      hintText: 'Enter your password',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(12.0)),
+                      ),
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+                    ),
+                    obscureText: true,
+                  ),
+                  const SizedBox(height: 24.0),
+                  ElevatedButton(
+                    onPressed: () async {
+                      String username = _usernameController.text;
+                      String password = _passwordController.text;
+
+                      final response = await request
+                          .login("http://127.0.0.1:8000/auth/login/", {
+                        'username': username,
+                        'password': password,
+                      });
+
+                      if (request.loggedIn) {
+                        String message = response['message'];
+                        String uname = response['username'];
+                        if (context.mounted) {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => MyHomePage()),
+                          );
+                          ScaffoldMessenger.of(context)
+                            ..hideCurrentSnackBar()
+                            ..showSnackBar(
+                              SnackBar(
+                                  content:
+                                      Text("$message Welcome, $uname.")),
+                            );
+                        }
+                      } else {
+                        if (context.mounted) {
+                          showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: const Text('Login Failed'),
+                              content: Text(response['message']),
+                              actions: [
+                                TextButton(
+                                  child: const Text('OK'),
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  },
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      minimumSize: Size(double.infinity, 50),
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      padding: const EdgeInsets.symmetric(vertical: 16.0),
+                    ),
+                    child: const Text('Login'),
+                  ),
+                  const SizedBox(height: 36.0),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const RegisterPage()),
+                      );
+                    },
+                    child: Text(
+                      'Don\'t have an account? Register',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.primary,
+                        fontSize: 16.0,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+2. Then i changed home: MyHomePage() to home: LoginPage() in main.dart
+
+#### Create a custom model according to your Django application project.
+1. I started by opening https://app.quicktype.io/
+2. Then I copied JSON endpoint i have ever created in the previous assignment
+3. Changed the setup name to ProductEntry in Quicktype, source type to JSON, and language to Dart.
+4. Then I pasted the previously copied JSON data into the textbox
+5. Then I copied the code to a new file, lib/models/product_entry.dart
+
+#### Create a page containing a list of all items available at the JSON endpoint in Django that you have deployed.
+1. First, I made a new file in the lib/screens directory with name list_product.dart and filled it as follows
+```
+import 'package:flutter/material.dart';
+import 'package:pinky_promise/models/product_entry.dart';
+import 'package:pinky_promise/widgets/left_drawer.dart';
+import 'package:pbp_django_auth/pbp_django_auth.dart';
+import 'package:provider/provider.dart';
+import 'package:pinky_promise/screens/product_detail.dart';
+
+class ProductListPage extends StatefulWidget {
+  const ProductListPage({super.key});
+
+  @override
+  State<ProductListPage> createState() => _ProductListPageState();
+}
+
+class _ProductListPageState extends State<ProductListPage> {
+  Future<List<ProductEntry>> fetchProducts(CookieRequest request) async {
+    try {
+      final response = await request.get('http://127.0.0.1:8000/json/');
+
+      if (response is List) {
+        return response.map((data) => ProductEntry.fromJson(data)).toList();
+      } else {
+        throw Exception("Invalid JSON response.");
+      }
+    } catch (error) {
+      throw Exception("Failed to load products: $error");
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final request = context.watch<CookieRequest>();
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          'Product List',
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Theme.of(context).colorScheme.primary,
+      ),
+      drawer: const LeftDrawer(),
+      body: FutureBuilder<List<ProductEntry>>(
+        future: fetchProducts(request),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(
+              child: Text(
+                'Error: ${snapshot.error}',
+                style: const TextStyle(fontSize: 18, color: Colors.red),
+                textAlign: TextAlign.center,
+              ),
+            );
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(
+              child: Text(
+                'No products found. Add some products!',
+                style: TextStyle(fontSize: 18, color: Colors.grey),
+              ),
+            );
+          } else {
+            final products = snapshot.data!;
+            return ListView.builder(
+              itemCount: products.length,
+              itemBuilder: (context, index) {
+                final product = products[index];
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ProductDetailPage(product: product),
+                      ),
+                    );
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.all(20.0),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10.0),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Colors.black26,
+                          blurRadius: 5.0,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          product.fields.name,
+                          style: const TextStyle(
+                            fontSize: 18.0,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Text("Description: ${product.fields.description}"),
+                        const SizedBox(height: 10),
+                        Text("Price: Rp${product.fields.price}"),
+                        const SizedBox(height: 10),
+                        Text("Coquetteness: ${product.fields.coquetteness}"),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            );
+          }
+        },
+      ),
+    );
+  }
+}
+
+``` 
+2. Then, I changed the function of the View Product button in the main page 
+```
+          else if (item.name == "View Product List") {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const ProductListPage(),
+              ),
+            );
+          }
+  
+```
+
+#### Create a detail page for each item listed on the Product list page.
+1. I created a new file in screens called product_detail.dart and filled it as follows
+```
+import 'package:flutter/material.dart';
+import 'package:pinky_promise/models/product_entry.dart';
+
+class ProductDetailPage extends StatelessWidget {
+  final ProductEntry product;
+
+  const ProductDetailPage({super.key, required this.product});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Product Detail'),
+        backgroundColor: Theme.of(context).colorScheme.primary,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              product.fields.name,
+              style: const TextStyle(
+                fontSize: 20.0,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text("Description: ${product.fields.description}"),
+            const SizedBox(height: 10),
+            Text("Price: Rp${product.fields.price}"),
+            const SizedBox(height: 10),
+            Text("Coquetteness: ${product.fields.coquetteness}"),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('Back to Product List'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+```
+2. Then I updated the ListView.builder in list_product.dart
+```
+            return ListView.builder(
+              itemCount: products.length,
+              itemBuilder: (context, index) {
+                final product = products[index];
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ProductDetailPage(product: product),
+                      ),
+                    );
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.all(20.0),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10.0),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Colors.black26,
+                          blurRadius: 5.0,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          product.fields.name,
+                          style: const TextStyle(
+                            fontSize: 18.0,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Text("Description: ${product.fields.description}"),
+                        const SizedBox(height: 10),
+                        Text("Price: Rp${product.fields.price}"),
+                        const SizedBox(height: 10),
+                        Text("Coquetteness: ${product.fields.coquetteness}"),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            );
+          }
+        },
+      ),
+    );
+  }
+}
+```
+3. Then I added a new function in main/views.py
+```
+@csrf_exempt
+def fetch_products(request):
+    if request.method == "GET":
+        user = request.user
+        products = Product.objects.filter(user=user)  # Filter berdasarkan user
+        product_list = [
+            {
+                "id": product.id,
+                "name": product.name,
+                "description": product.description,
+                "price": product.price,
+                "coquetteness": product.coquetteness,
+            }
+            for product in products
+        ]
+        return JsonResponse(product_list, safe=False)
+
+```
+
+And added the url path to urls.py
+```
+from django.urls import path
+from main.views import ..., fetch_products
+app_name = 'main'
+
+urlpatterns = [
+...
+    path('json/', fetch_products, name='fetch_products'),
+]
+```

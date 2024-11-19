@@ -3,9 +3,9 @@ import 'package:pinky_promise/widgets/left_drawer.dart';
 import 'package:pinky_promise/widgets/product_card.dart';
 
 class MyHomePage extends StatelessWidget {
-  final String npm = '2306170446';
+  final String npm = '2306170446'; 
   final String name = 'Samuella Putri Nadia Pauntu';
-  final String className = 'PBP KKI';
+  final String className = 'PBP KKI'; 
   final List<ItemHomepage> items = [
     ItemHomepage("View Product List", Icons.list, Colors.pink.shade100),
     ItemHomepage("Add Item", Icons.add, Colors.pink.shade200),
@@ -18,6 +18,7 @@ class MyHomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        iconTheme: const IconThemeData(color: Colors.white),
         title: const Text(
           'PINKY PROMISE',
           style: TextStyle(
@@ -26,7 +27,6 @@ class MyHomePage extends StatelessWidget {
           ),
         ),
         backgroundColor: Theme.of(context).colorScheme.primary,
-        iconTheme: const IconThemeData(color: Colors.white),
       ),
       drawer: const LeftDrawer(),
       body: Padding(
@@ -49,7 +49,7 @@ class MyHomePage extends StatelessWidget {
                   const Padding(
                     padding: EdgeInsets.only(top: 16.0),
                     child: Text(
-                      'Hi MofuBuddy! Welcome back to Pinky Promise!',
+                      'Welcome back to Pinky Promise, MofuBuddy!',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 18.0,
