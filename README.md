@@ -1005,7 +1005,12 @@ SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SAMESITE = 'None'
 SESSION_COOKIE_SAMESITE = 'None'
 ```
-I also added 'corsheaders.middleware.CorsMiddleware' to MIDDLEWARE and added "10.0.2.2" to ALLOWED_HOSTS 
+
+Then, I run this command after adding django-cors-headers to requirements.txt 
+```
+pip3 install django-cors-headers
+```
+I also added 'corsheaders.middleware.CorsMiddleware' to MIDDLEWARE and added "10.0.2.2" to ALLOWED_HOSTS.
 
 2. I created a view method for login which is done in authentication/views.py.
 ```
